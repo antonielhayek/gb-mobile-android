@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowInsets;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -21,6 +24,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 
 import com.gameball.gameball.BuildConfig;
 import com.gameball.gameball.R;
@@ -61,6 +65,8 @@ public class GameballWidgetActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gameball_widget);
 
+        applySystemBarPadding(getWindow());
+
         // Ensure SharedPreferences is initialized before any usage
         if (!SharedPreferencesUtils.isInitialized()) {
             SharedPreferencesUtils.init(this, new Gson());
@@ -74,10 +80,10 @@ public class GameballWidgetActivity extends AppCompatActivity {
         widgetView.setBackgroundColor(Color.WHITE);
 
         // Initialize GestureDetector with a simple gesture listener
-        gestureDetector = new GestureDetector(this, new GestureListener(new Callback<Boolean>(){
+        gestureDetector = new GestureDetector(this, new GestureListener(new Callback<Boolean>() {
             @Override
             public void onSuccess(Boolean aBoolean) {
-                if(aBoolean){
+                if (aBoolean) {
                     closeWidget();
                 }
             }
@@ -90,7 +96,16 @@ public class GameballWidgetActivity extends AppCompatActivity {
 
         language = LanguageUtils.handleLanguage();
 
-        closeButton = primaryCloseButton;
+        if (LanguageUtils.shouldHandleCloseButtonDirection(this.language)) {
+            primaryCloseButton.setVisibility(View.GONE);
+            secondaryCloseButton.setVisibility(View.VISIBLE);
+
+            closeButton = secondaryCloseButton;
+        } else {
+            primaryCloseButton.setVisibility(View.VISIBLE);
+            secondaryCloseButton.setVisibility(View.GONE);
+            closeButton = primaryCloseButton;
+        }
 
         extractDataFromBundle();
         setupWidget();
@@ -98,6 +113,28 @@ public class GameballWidgetActivity extends AppCompatActivity {
 
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+    }
+
+    public void applySystemBarPadding(Window window) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { // API 30+
+            final View decorView = window.getDecorView();
+
+            decorView.setOnApplyWindowInsetsListener((view, insets) -> {
+                Insets statusBarInsets = insets.getInsets(WindowInsets.Type.statusBars());
+                Insets navBarInsets = insets.getInsets(WindowInsets.Type.navigationBars());
+
+                view.setPadding(
+                        0,
+                        statusBarInsets.top,
+                        0,
+                        navBarInsets.bottom
+                );
+
+                return insets;
+            });
+
+            ViewCompat.requestApplyInsets(decorView);
         }
     }
 
@@ -135,16 +172,18 @@ public class GameballWidgetActivity extends AppCompatActivity {
         widgetView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                if(request == null) {
+                if (request == null) {
                     return false;
                 }
 
                 return handleCapturedLink(request.getUrl().toString());
             }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return handleCapturedLink(url);
             }
+
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
@@ -171,13 +210,11 @@ public class GameballWidgetActivity extends AppCompatActivity {
             }
         });
 
-        if(!showCloseButton){
+        if (!showCloseButton) {
             primaryCloseButton.setVisibility(View.GONE);
             secondaryCloseButton.setVisibility(View.GONE);
-        }
-        else
-        {
-            if(LanguageUtils.shouldHandleCloseButtonDirection(this.language)){
+        } else {
+            if (LanguageUtils.shouldHandleCloseButtonDirection(this.language)) {
 
                 primaryCloseButton.setVisibility(View.GONE);
                 secondaryCloseButton.setVisibility(View.VISIBLE);
@@ -191,14 +228,14 @@ public class GameballWidgetActivity extends AppCompatActivity {
                     closeWidget();
                 }
             });
-            
+
             // Apply close button color
             String colorToUse = closeButtonColor != null ? closeButtonColor : "#CECECE";
             closeButton.setColorFilter(Color.parseColor(colorToUse));
         }
     }
 
-    private void closeWidget(){
+    private void closeWidget() {
         finish();
         GameballWidgetActivity.this.overridePendingTransition(R.anim.translate_bottom_to_top, R.anim.translate_top_to_bottom);
     }
@@ -235,19 +272,19 @@ public class GameballWidgetActivity extends AppCompatActivity {
         sharedPreferences.removeOpenDetailPreference();
         sharedPreferences.removeHideNavigationPreference();
 
-        if(platform != null)
+        if (platform != null)
             uri.appendQueryParameter(PLATFORM_QUERY_KEY, platform);
-        if(shop != null)
+        if (shop != null)
             uri.appendQueryParameter(SHOP_QUERY_KEY, shop);
-        if(sdkVersion != null)
+        if (sdkVersion != null)
             uri.appendQueryParameter(GB_SDK_VERSION_QUERY_KEY, sdkVersion);
-        if(osVersion != null)
+        if (osVersion != null)
             uri.appendQueryParameter(OS_VERSION_QUERY_KEY, osVersion);
-        if(openDetail != null)
+        if (openDetail != null)
             uri.appendQueryParameter(OPEN_DETAIL_QUERY_KEY, openDetail);
-        if(hideNavigation != null)
+        if (hideNavigation != null)
             uri.appendQueryParameter(HIDE_NAVIGATION_QUERY_KEY, hideNavigation);
-        if(sessionToken != null)
+        if (sessionToken != null)
             uri.appendQueryParameter(SESSION_TOKEN_QUERY_KEY, sessionToken);
 
         Log.d("GameballApp", uri.toString());
@@ -255,15 +292,14 @@ public class GameballWidgetActivity extends AppCompatActivity {
         widgetView.loadUrl(uri.toString());
     }
 
-    private Boolean handleCapturedLink(String url){
+    private Boolean handleCapturedLink(String url) {
 
-        if(capturedLinkCallback != null){
-            try{
+        if (capturedLinkCallback != null) {
+            try {
                 capturedLinkCallback.onSuccess(url);
                 closeWidget();
                 return true;
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 capturedLinkCallback.onError(e);
                 closeWidget();
                 return true;
@@ -300,10 +336,10 @@ public class GameballWidgetActivity extends AppCompatActivity {
         }
 
         GameballWidgetActivity.capturedLinkCallback = capturedUrlCallback;
-        if(showCloseButton != null){
+        if (showCloseButton != null) {
             GameballWidgetActivity.showCloseButton = showCloseButton;
         }
-        if(closeButtonColor != null && !closeButtonColor.isEmpty()){
+        if (closeButtonColor != null && !closeButtonColor.isEmpty()) {
             GameballWidgetActivity.closeButtonColor = closeButtonColor;
         }
         Intent instance = new Intent(context, GameballWidgetActivity.class);

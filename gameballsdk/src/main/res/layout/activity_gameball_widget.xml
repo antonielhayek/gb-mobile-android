@@ -29,35 +29,37 @@
             android:id="@+id/btn_close_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@null"
+            android:layout_marginTop="15dp"
             android:minWidth="20dp"
             android:paddingStart="20dp"
-            android:paddingEnd="20dp"
             android:paddingTop="15dp"
+            android:paddingEnd="20dp"
             android:paddingBottom="10dp"
-            android:background="@null"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_close"
+            android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:scaleType="fitCenter"
-            tools:ignore="ContentDescription"
-            android:visibility="visible" />
+            tools:ignore="ContentDescription" />
 
         <ImageButton
             android:id="@+id/btn_close_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@null"
+            android:layout_marginTop="15dp"
             android:minWidth="20dp"
             android:paddingStart="20dp"
-            android:paddingEnd="20dp"
             android:paddingTop="15dp"
+            android:paddingEnd="20dp"
             android:paddingBottom="10dp"
-            android:background="@null"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_close"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:scaleType="fitCenter"
-            tools:ignore="ContentDescription"
-            android:visibility="gone" />
+            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
