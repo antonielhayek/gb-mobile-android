@@ -36,7 +36,7 @@ import com.google.gson.Gson;
 
 public class GameballWidgetActivity extends AppCompatActivity {
     private WebView widgetView;
-    private String customerId;
+    @Nullable private String customerId;
     private String language;
     private ImageView closeButton;
     private ImageView primaryCloseButton;
@@ -256,10 +256,7 @@ public class GameballWidgetActivity extends AppCompatActivity {
         if (sharedPreferences.getClientBotSettings() != null)
             uri.appendQueryParameter(MAIN_COLOR_QUERY_KEY, sharedPreferences.getClientBotSettings().getBotMainColor().replace("#", ""));
 
-        if (customerId != null)
-            uri.appendQueryParameter(CUSTOMER_QUERY_KEY, customerId);
-        else if (sharedPreferences.getCustomerId() != null)
-            uri.appendQueryParameter(CUSTOMER_QUERY_KEY, sharedPreferences.getCustomerId());
+        uri.appendQueryParameter(CUSTOMER_QUERY_KEY, customerId != null ? customerId : "");
 
         String platform = sharedPreferences.getPlatformPreference();
         String shop = sharedPreferences.getShopPreference();
@@ -329,7 +326,7 @@ public class GameballWidgetActivity extends AppCompatActivity {
         return gestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
     }
 
-    public static void start(Activity context, String customerId, @Nullable Boolean showCloseButton, @Nullable String closeButtonColor, @Nullable String widgetUrlPrefix, @Nullable Callback<String> capturedUrlCallback) {
+    public static void start(Activity context, @Nullable String customerId, @Nullable Boolean showCloseButton, @Nullable String closeButtonColor, @Nullable String widgetUrlPrefix, @Nullable Callback<String> capturedUrlCallback) {
         // Ensure SharedPreferences is initialized
         if (!SharedPreferencesUtils.isInitialized()) {
             SharedPreferencesUtils.init(context, new Gson());
