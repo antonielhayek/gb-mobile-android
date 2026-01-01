@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 }
 
 //rootProject.name = "gb-mobile-android"
-include ':gameballsdk'
+//include ':gameballsdk'
